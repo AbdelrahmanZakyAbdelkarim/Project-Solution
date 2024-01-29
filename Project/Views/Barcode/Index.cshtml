@@ -1,0 +1,181 @@
+﻿
+@model List<BarcodeDate>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1>Index</h1>
+
+<div class="dropdown mb-3">
+    <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+        Dropdown button
+    </button>
+    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+        <a onclick="generate()" id="one_column" class="dropdown-item">One Column</a>
+        <a onclick="generate()" id="two_column" class="dropdown-item">Two Column</a>
+    </div>
+</div>
+@if (Model.Count() > 0)
+{
+    <div id="printArea">
+        <div id="tableContent" class="row">
+            @for (var i = 0; i < Model.Count; i++)
+            {
+                <div class="xcontent  col-md-12">
+                    <table class="table table-striped table-hover col-md-12 border">
+                        <tbody>
+                            <tr>
+                                <td>Date</td>
+                                <td>@Model[i].Date</td>
+                            </tr>
+                            <tr>
+                                <td>Shift</td>
+                                <td>@Model[i].Shift</td>
+                            </tr>
+                            <tr>
+                                <td>Name</td>
+                                <td>@Model[i].Name</td>
+                            </tr>
+                            <tr>
+                                <td>Quantity</td>
+                                <td>@Model[i].Quantity</td>
+                            </tr>
+                            <tr>
+                                <td>Machine Number</td>
+                                <td>@Model[i].MachineNumber</td>
+                            </tr>
+                            <tr>
+                                <td>Color</td>
+                                <td>@Model[i].Color</td>
+                            </tr>
+                            <tr>
+                                <td>Worker</td>
+                                <td>@Model[i].Worker</td>
+                            </tr>
+                            <tr>
+                                <td>QualityInspector</td>
+                                <td>@Model[i].QualityInspector</td>
+                            </tr>
+                            <tr>
+                                <td>Weight</td>
+                                <td>@Model[i].Weight</td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <svg width="80px" height="30px" id="barcode-@i"></svg>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>  
+    </div>
+
+    <div>
+
+       
+        @for (var i = 0; i < Model.Count; i++)
+        {
+            <script>
+                JsBarcode("#barcode-@i", "@Model[i].Barcode")
+            </script>
+        }
+        
+    </div>
+}
+
+<script>
+    function dispalyOneColumn() {
+        $(".table").removeClass('col-md-6');
+        $(".table").addClass('col-md-12');
+        printArea()
+    }
+    function dispalyTwoColumn() {
+        $(".table").removeClass('col-md-12');
+        $(".table").addClass('col-md-6');
+        printArea()
+    }
+
+
+    function printArea() {
+        var printContents = document.getElementById('printArea').innerHTML;
+        var originalContents = document.body.innerHTML;
+        document.body.innerHTML = printContents;
+        document.body.innerHTML = originalContents;
+    }
+</script>
+@* <script>
+    $(document).ready(function () {
+        $('#one_column').on('click', function () {
+            // Get HTML content as a string
+            var htmlContent = $('#printArea').html();
+
+            // Make the POST request using jQuery
+            $.ajax({
+                url: '/Barcode/GeneratePdf',
+                type: 'POST',
+                data: { htmlContent: htmlContent },
+                dataType: 'json', // Change the data type based on your response
+                success: function (data) {
+                    // Handle the response data
+                    console.log(data);
+                },
+                error: function (error) {
+                    console.error('Error:', error);
+                }
+            });
+        });
+    });
+</script> *@
+
+<style>
+    table{
+        page-break-inside: avoid;
+    }
+</style>
+<script>
+    function generate() {
+       
+        var htmlContentArray = [];
+        var formData = new FormData();
+        $('.xcontent').each(function () {
+            var tableHtml = $(this).html();
+            htmlContentArray.push(tableHtml);
+            formData.append("htmlContent", tableHtml);
+        });
+        
+
+        // Now htmlContentArray contains the HTML content of each table
+        console.log(htmlContentArray);
+
+        
+        
+        fetch('/Barcode/GeneratePdf', {
+            method: 'POST',
+            body : formData
+        })
+            .then(response => {
+                // Check if the request was successful (status code 200)
+                if (response.ok) {
+                    // If successful, open the generated PDF in a new tab
+                    return response.blob();
+                } else {
+                    // If not successful, handle the error
+                    throw new Error('Error generating PDF');
+                }
+            })
+            .then(blob => {
+                // Create a Blob URL for the PDF content
+                var pdfUrl = URL.createObjectURL(blob);
+
+                // Open the PDF in a new tab
+                window.open(pdfUrl, '_blank');
+            })
+            .catch(error => {
+                // Handle any errors that occurred during the fetch
+                console.error('Fetch error:', error);
+            });
+    }
+</script>
