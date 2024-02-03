@@ -16,9 +16,9 @@ namespace Project.PL.Controllers
     {
         private readonly PdfConverter _converter;
 
-        public BarcodeController()
+        public BarcodeController(IConverter converter)
         {
-            _converter = new PdfConverter();
+            _converter = new PdfConverter(converter);
         }
         public IActionResult Index()
         {

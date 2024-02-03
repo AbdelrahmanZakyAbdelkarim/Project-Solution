@@ -8,9 +8,9 @@ namespace Project.PL.Helpers
         private readonly IConverter _converter;
 
 
-        public PdfConverter()
+        public PdfConverter(IConverter converter)
         {
-            _converter = new SynchronizedConverter(new PdfTools());
+            _converter = converter;
         }
 
         public byte[] ConvertHtmlToPdf(string[] items)
